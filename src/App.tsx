@@ -1,24 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useObservable } from 'rxjs-hooks';
+
+
+import Todo from './components/todo-item/TodoItem';
+import InputEditor from './components/input-editor/InputEditor';
+
+import TodoService from "./one77/todo.js";
+
 
 const App: React.FC = () => {
+  const todos: any = useObservable(() => TodoService.getTodos(), []);
+  const remote: any = useObservable(() => TodoService.getRemoteTodos(), []);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <InputEditor ></InputEditor>
+      {todos.map((todo: any) => {
+        return <Todo key={todo.id} id={todo.id} content={todo.content} isComplete={todo.isComplete}></Todo>
+      })}
     </div>
   );
 }
