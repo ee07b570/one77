@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 // import { useObservable } from 'rxjs-hooks';
 
 import Todo from './components/todo-item/TodoItem';
@@ -24,16 +24,23 @@ const App: React.FC = () => {
   const todos: any = useObservable(TodoService.getTodos(), []);
   console.log('todos', todos);
   // const remote: any = useObservable(() => TodoService.getRemoteTodos(), []);
+
+  return (
+    <_APP todos={todos}></_APP>
+  );
+}
+
+const _APP: any = (props: any) => {
   return (
     <div className="App">
       <InputEditor ></InputEditor>
-      {todos.map((todo: any) => {
+      {props.todos.map((todo: any) => {
         console.log('todo', { todo })
         const _todo = Object.assign({}, todo);
         return <Todo key={`${_todo.id}+${+ new Date()}`} id={_todo.id} content={_todo.content} isComplete={_todo.isComplete} onToggle={() => TodoService.toggle(_todo.id)}></Todo>
       })}
     </div>
-  );
+  )
 }
 
 // interface props {
