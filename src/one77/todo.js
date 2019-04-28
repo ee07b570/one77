@@ -1,7 +1,7 @@
 
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, isObservable } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { scan, map, delay, catchError } from 'rxjs/operators';
+import { scan, map, delay, catchError, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs'; 
 
 // import 'rxjs/add/operator/scan';
@@ -26,7 +26,7 @@ class TodoService {
     // this.modify$               = new Subject();
     // this.remove$               = new Subject();
     // this.removeCompleted$      = new Subject();
-    // this.toggle$               = new Subject();
+    this.toggle$               = new Subject();
     // this.toggleAll$            = new Subject();
 
 
@@ -47,13 +47,13 @@ class TodoService {
       )
       .subscribe(this.update$);
     
-    // this.modify$
-    //     .map(({ uuid, newTitle }) => todos => {
-    //       const targetTodo = todos.find(todo => todo.id === uuid);
-    //       targetTodo.title = newTitle;
-    //       return todos;
-    //     })
-    //     .subscribe(this.update$);
+    // this.modify$.pipe(
+    //   map(({ uuid, newTitle }) => todos => {
+    //     const targetTodo = todos.find(todo => todo.id === uuid);
+    //     targetTodo.title = newTitle;
+    //     return todos;
+    //   })
+    // ).subscribe(this.update$);
     
     // this.remove$
     //     .map(uuid => todos => todos.filter(todo => todo.id !== uuid))
@@ -63,13 +63,13 @@ class TodoService {
     //     .map(() => todos => todos.filter(todo => !todo.completed))
     //     .subscribe(this.update$);
     
-    // this.toggle$
-    //     .map(uuid => todos => {
-    //       const targetTodo = todos.find(todo => todo.id === uuid);
-    //       targetTodo.completed = !targetTodo.completed;
-    //       return todos;
-    //     })
-    //     .subscribe(this.update$);
+    this.toggle$.pipe(
+      map(uuid => todos => {
+        const targetTodo = todos.find(todo => todo.id === uuid);
+        targetTodo.isComplete = !targetTodo.isComplete;
+        return todos;
+      })
+    ).subscribe(this.update$);
     
     // this.toggleAll$
     //     .map(completed => todos => {
@@ -102,13 +102,15 @@ class TodoService {
   }
 
   getRemoteTodos() {
-    const obs$ = ajax.getJSON(`https://api.github.com/users?per_page=5`).pipe(
-      map(userResponse => console.log('users: ', userResponse)),
+    const status$ = new BehaviorSubject(false);
+    const obs$ = ajax.getJSON(`https://api.github.com`).pipe(
+      tap(userResponse => console.log('users: ', userResponse)),
       catchError(error => {
         console.log('error: ', error);
         return of(error);
       })
     );
+    console.warn('isObservable(obs$)', isObservable(obs$))
     return obs$
   }
 
@@ -120,9 +122,9 @@ class TodoService {
   //   this.removeCompletedTodos$.next();
   // }
 
-  // toggle(uuid) {
-  //   this.toggleTodo$.next(uuid);
-  // }
+  toggle(uuid) {
+    this.toggle$.next(uuid);
+  }
 
   // toggleAll(completed) {
   //   this.toggleAllTodos$.next(completed);
