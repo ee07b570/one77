@@ -3,6 +3,9 @@ import { BehaviorSubject, Subject, isObservable } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 import { scan, map, delay, catchError, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs'; 
+import produce from 'immer'
+
+window.produce = produce
 
 // import 'rxjs/add/operator/scan';
 // import 'rxjs/add/operator/publishReplay';
@@ -63,12 +66,18 @@ class TodoService {
     //     .map(() => todos => todos.filter(todo => !todo.completed))
     //     .subscribe(this.update$);
     
+    // this.toggle$.pipe(
+    //   map(uuid => todos => {
+    //     const targetTodo = todos.find(todo => todo.id === uuid);
+    //     targetTodo.isComplete = !targetTodo.isComplete;
+    //     return todos;
+    //   })
+    // ).subscribe(this.update$);
     this.toggle$.pipe(
-      map(uuid => todos => {
+      map(uuid => produce(todos => {
         const targetTodo = todos.find(todo => todo.id === uuid);
         targetTodo.isComplete = !targetTodo.isComplete;
-        return todos;
-      })
+      }))
     ).subscribe(this.update$);
     
     // this.toggleAll$
